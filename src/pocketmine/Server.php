@@ -264,7 +264,7 @@ class Server{
 	 * @return string
 	 */
 	public function getName(){
-		return "NGCoreV3";
+		return "PocketMine-Bladestorm";
 	}
 
 	/**
@@ -1377,8 +1377,8 @@ class Server{
     | |_) | | (_| | (_| |  __/\__ \ || (_) | |  | | | | | |
     |_.__/|_|\__,_|\__,_|\___||___/\__\___/|_|  |_| |_| |_|	 
 
- §cBladestorm §fversion: §a$this->getPocketMineVersion()
- §bMCPE §fversion: §a$this->getVersion()
+ §cBladestorm §fversion: §a".$this->getPocketMineVersion()."
+ §bMCPE §fversion: §a".$this->getVersion()."
  §cBladestorm §fis a fork of §aPocketMine-MP§f.";	
 		$this->getLogger()->info($string);
 	}	
