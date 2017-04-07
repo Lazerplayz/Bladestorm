@@ -1366,17 +1366,20 @@ class Server{
 	}
 
 	public function about(){
-		$string = "§e
-  _   _§6  _____§b  _____            §a__      ______§e  
- | \ | |§6/ ____|§b/ ____|           §a\ \    / /___ \§e 
- |  \| |§6 |  __|§b |     ___  _ __ __§a\ \  / /  __) |§e
- | . ` |§6 | |_ |§b |    / _ \| '__/ _ §a\ \/ /  |__ <§e 
- | |\  |§6 |__| |§b |___| (_) | | |  __/§a\  /   ___) |§e
- |_| \_|§6\_____|§b\_____\___/|_|  \___| §a\/   |____/§r
-                                    
- §fYou're running §eN§6G§bCore§aV3 §ffor MCPE version §a" . ProtocolInfo::MINECRAFT_VERSION . "§f.
- Please note that §eN§6G§bCore§aV3 §fis prohibited for production use in any other server except §eNether§6Games.
- §eN§6G§bCore§aV3 §fis a fork of §aPocketMine-MP§b.";	
+		$string = "§c
+ ,_._._._._._._._._|_________________________________________________,
+ |_|_|_|_|_|_|_|_|_|________________________________________________/
+
+     _     _           _           _                       
+    | |   | |         | |         | |                      
+    | |__ | | __ _  __| | ___  ___| |_ ___  _ __ _ __ ___  
+    | '_ \| |/ _` |/ _` |/ _ \/ __| __/ _ \| '__| '_ ` _ \ 
+    | |_) | | (_| | (_| |  __/\__ \ || (_) | |  | | | | | |
+    |_.__/|_|\__,_|\__,_|\___||___/\__\___/|_|  |_| |_| |_|	 
+
+ §cBladestorm §fversion: §a$this->getPocketMineVersion()
+ §bMCPE §fversion: §a$this->getVersion()
+ §cBladestorm §fis a fork of §aPocketMine-MP§f.";	
 		$this->getLogger()->info($string);
 	}	
 
