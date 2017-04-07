@@ -1379,7 +1379,7 @@ class Server{
 
  §cBladestorm §fversion: §a".$this->getPocketMineVersion()."
  §bMCPE §fversion: §a".$this->getVersion()."
- §cBladestorm §fis a fork of §aPocketMine-MP§f.";	
+ §cBladestorm §fis a fork of §aPocketMine-MP§f, distributed under the LGPL licence";	
 		$this->getLogger()->info($string);
 	}	
 
