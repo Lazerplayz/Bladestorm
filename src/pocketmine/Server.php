@@ -48,8 +48,8 @@ use pocketmine\inventory\Recipe;
 use pocketmine\item\enchantment\Enchantment;
 use pocketmine\item\Item;
 use pocketmine\lang\BaseLang;
-use pocketmine\level\format\io\LevelProviderManager;
 use pocketmine\level\format\io\leveldb\LevelDB;
+use pocketmine\level\format\io\LevelProviderManager;
 use pocketmine\level\format\io\region\Anvil;
 use pocketmine\level\format\io\region\McRegion;
 use pocketmine\level\format\io\region\PMAnvil;
@@ -74,13 +74,13 @@ use pocketmine\nbt\tag\LongTag;
 use pocketmine\nbt\tag\ShortTag;
 use pocketmine\nbt\tag\StringTag;
 use pocketmine\network\CompressBatchedTask;
+use pocketmine\network\mcpe\protocol\BatchPacket;
+use pocketmine\network\mcpe\protocol\DataPacket;
+use pocketmine\network\mcpe\protocol\ProtocolInfo;
+use pocketmine\network\mcpe\protocol\PlayerListPacket;
+use pocketmine\network\mcpe\RakLibInterface;
 use pocketmine\network\Network;
-use pocketmine\network\protocol\BatchPacket;
-use pocketmine\network\protocol\DataPacket;
-use pocketmine\network\protocol\Info as ProtocolInfo;
-use pocketmine\network\protocol\PlayerListPacket;
 use pocketmine\network\query\QueryHandler;
-use pocketmine\network\RakLibInterface;
 use pocketmine\network\rcon\RCON;
 use pocketmine\network\upnp\UPnP;
 use pocketmine\permission\BanList;
@@ -90,6 +90,7 @@ use pocketmine\plugin\Plugin;
 use pocketmine\plugin\PluginLoadOrder;
 use pocketmine\plugin\PluginManager;
 use pocketmine\plugin\ScriptPluginLoader;
+use pocketmine\resourcepacks\ResourcePackManager;
 use pocketmine\scheduler\FileWriteTask;
 use pocketmine\scheduler\SendUsageTask;
 use pocketmine\scheduler\ServerScheduler;
@@ -179,6 +180,9 @@ class Server{
 	/** @var CraftingManager */
 	private $craftingManager;
 
+	/** @var ResourcePackManager */
+	private $resourceManager;
+
 	/** @var ConsoleCommandSender */
 	private $consoleSender;
 
@@ -260,7 +264,7 @@ class Server{
 	 * @return string
 	 */
 	public function getName(){
-		return "PocketMine-MP";
+		return "NGCoreV3";
 	}
 
 	/**
@@ -598,6 +602,13 @@ class Server{
 	}
 
 	/**
+	 * @return ResourcePackManager
+	 */
+	public function getResourceManager() : ResourcePackManager{
+		return $this->resourceManager;
+	}
+
+	/**
 	 * @return ServerScheduler
 	 */
 	public function getScheduler(){
@@ -690,7 +701,7 @@ class Server{
 	 *
 	 * @return CompoundTag
 	 */
-	public function getOfflinePlayerData($name){
+	public function getOfflinePlayerData($name) : CompoundTag{
 		$name = strtolower($name);
 		$path = $this->getDataPath() . "players/";
 		if($this->shouldSavePlayerData()){
@@ -809,7 +820,7 @@ class Server{
 	public function getPlayerExact($name){
 		$name = strtolower($name);
 		foreach($this->getOnlinePlayers() as $player){
-			if(strtolower($player->getName()) === $name){
+			if($player->getLowerCaseName() === $name){
 				return $player;
 			}
 		}
@@ -826,7 +837,7 @@ class Server{
 		$partialName = strtolower($partialName);
 		$matchedPlayers = [];
 		foreach($this->getOnlinePlayers() as $player){
-			if(strtolower($player->getName()) === $partialName){
+			if($player->getLowerCaseName() === $partialName){
 				$matchedPlayers = [$player];
 				break;
 			}elseif(stripos($player->getName(), $partialName) !== false){
@@ -1354,6 +1365,21 @@ class Server{
 		}, $microseconds);
 	}
 
+	public function about(){
+		$string = "§e
+  _   _§6  _____§b  _____            §a__      ______§e  
+ | \ | |§6/ ____|§b/ ____|           §a\ \    / /___ \§e 
+ |  \| |§6 |  __|§b |     ___  _ __ __§a\ \  / /  __) |§e
+ | . ` |§6 | |_ |§b |    / _ \| '__/ _ §a\ \/ /  |__ <§e 
+ | |\  |§6 |__| |§b |___| (_) | | |  __/§a\  /   ___) |§e
+ |_| \_|§6\_____|§b\_____\___/|_|  \___| §a\/   |____/§r
+                                    
+ §fYou're running §eN§6G§bCore§aV3 §ffor MCPE version §a" . ProtocolInfo::MINECRAFT_VERSION . "§f.
+ Please note that §eN§6G§bCore§aV3 §fis prohibited for production use in any other server except §eNether§6Games.
+ §eN§6G§bCore§aV3 §fis a fork of §aPocketMine-MP§b.";	
+		$this->getLogger()->info($string);
+	}	
+
 	/**
 	 * @param \ClassLoader    $autoloader
 	 * @param \ThreadedLogger $logger
@@ -1386,10 +1412,14 @@ class Server{
 			$this->pluginPath = realpath($pluginPath) . DIRECTORY_SEPARATOR;
 
 			$this->console = new CommandReader();
+			
+			$this->about();
+			$this->logger->info(TextFormat::GREEN."Running server checks...");
+			$this->logger->info(TextFormat::GREEN."Everything good to go! Starting the server...");
 
 			$version = new VersionString($this->getPocketMineVersion());
 
-			$this->logger->info("Loading pocketmine.yml...");
+			//$this->logger->info("Loading pocketmine.yml...");
 			if(!file_exists($this->dataPath . "pocketmine.yml")){
 				$content = file_get_contents($this->filePath . "src/pocketmine/resources/pocketmine.yml");
 				if($version->isDev()){
@@ -1399,7 +1429,7 @@ class Server{
 			}
 			$this->config = new Config($this->dataPath . "pocketmine.yml", Config::YAML, []);
 
-			$this->logger->info("Loading server properties...");
+			//$this->logger->info("Loading server properties...");
 			$this->properties = new Config($this->dataPath . "server.properties", Config::PROPERTIES, [
 				"motd" => "Minecraft: PE Server",
 				"server-port" => 19132,
@@ -1428,11 +1458,11 @@ class Server{
 
 			$this->forceLanguage = $this->getProperty("settings.force-language", false);
 			$this->baseLang = new BaseLang($this->getProperty("settings.language", BaseLang::FALLBACK_LANGUAGE));
-			$this->logger->info($this->getLanguage()->translateString("language.selected", [$this->getLanguage()->getName(), $this->getLanguage()->getLang()]));
+			//$this->logger->info($this->getLanguage()->translateString("language.selected", [$this->getLanguage()->getName(), $this->getLanguage()->getLang()]));
 
 			$this->memoryManager = new MemoryManager($this);
 
-			$this->logger->info($this->getLanguage()->translateString("pocketmine.server.start", [TextFormat::AQUA . $this->getVersion()]));
+			//$this->logger->info($this->getLanguage()->translateString("pocketmine.server.start", [TextFormat::AQUA . $this->getVersion()]));
 
 			if(($poolSize = $this->getProperty("settings.async-workers", "auto")) === "auto"){
 				$poolSize = ServerScheduler::$WORKERS;
@@ -1505,7 +1535,7 @@ class Server{
 				@cli_set_process_title($this->getName() . " " . $this->getPocketMineVersion());
 			}
 
-			$this->logger->info($this->getLanguage()->translateString("pocketmine.server.networkStart", [$this->getIp() === "" ? "*" : $this->getIp(), $this->getPort()]));
+			//$this->logger->info($this->getLanguage()->translateString("pocketmine.server.networkStart", [$this->getIp() === "" ? "*" : $this->getIp(), $this->getPort()]));
 			define("BOOTUP_RANDOM", random_bytes(16));
 			$this->serverID = Utils::getMachineUniqueId($this->getIp() . $this->getPort());
 
@@ -1516,13 +1546,13 @@ class Server{
 			$this->network->setName($this->getMotd());
 
 
-			$this->logger->info($this->getLanguage()->translateString("pocketmine.server.info", [
+			/*$this->logger->info($this->getLanguage()->translateString("pocketmine.server.info", [
 				$this->getName(),
 				($version->isDev() ? TextFormat::YELLOW : "") . $version->get(true) . TextFormat::WHITE,
 				$this->getCodename(),
 				$this->getApiVersion()
 			]));
-			$this->logger->info($this->getLanguage()->translateString("pocketmine.server.license", [$this->getName()]));
+			$this->logger->info($this->getLanguage()->translateString("pocketmine.server.license", [$this->getName()]));*/
 
 			Timings::init();
 
@@ -1539,6 +1569,8 @@ class Server{
 			Effect::init();
 			Attribute::init();
 			$this->craftingManager = new CraftingManager();
+
+			$this->resourceManager = new ResourcePackManager($this, $this->getDataPath() . "resource_packs" . DIRECTORY_SEPARATOR);
 
 			$this->pluginManager = new PluginManager($this, $this->commandMap);
 			$this->pluginManager->subscribeToPermission(Server::BROADCAST_CHANNEL_ADMINISTRATIVE, $this->consoleSender);
@@ -1854,7 +1886,7 @@ class Server{
 		}
 
 
-		$sender->sendMessage(new TranslationContainer(TextFormat::GOLD . "%commands.generic.notFound"));
+		$sender->sendMessage("§l§o§eN§6G§r§7: §cYou typed an unknown command, try again!");
 
 		return false;
 	}
@@ -2196,7 +2228,7 @@ class Server{
 		foreach($this->players as $p){
 			if(!$p->loggedIn and ($tickTime - $p->creationTime) >= 10){
 				$p->close("", "Login timeout");
-			}elseif($this->alwaysTickPlayers){
+			}elseif($this->alwaysTickPlayers and $p->joined){
 				$p->onUpdate($currentTick);
 			}
 		}
@@ -2241,7 +2273,7 @@ class Server{
 		if($this->getAutoSave()){
 			Timings::$worldSaveTimer->startTiming();
 			foreach($this->players as $index => $player){
-				if($player->isOnline()){
+				if($player->joined){
 					$player->save(true);
 				}elseif(!$player->isConnected()){
 					$this->removePlayer($player);

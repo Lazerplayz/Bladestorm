@@ -32,7 +32,7 @@ class BanEntry{
 	private $source = "(Unknown)";
 	/** @var \DateTime */
 	private $expirationDate = null;
-	private $reason = "Banned by an operator.";
+	private $reason = "an unknown reason.";
 
 	public function __construct($name){
 		$this->name = strtolower($name);
