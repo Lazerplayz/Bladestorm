@@ -1319,7 +1319,7 @@ class Player extends Human implements CommandSender, InventoryHolder, ChunkLoade
 	public function sendSettings(){
 		$pk = new AdventureSettingsPacket();
 		$pk->flags = 0;
-		$pk->worldImmutable = $this->isAdventure();
+		$pk->worldImmutable = $this->isSpectator();
 		$pk->autoJump = $this->autoJump;
 		$pk->allowFlight = $this->allowFlight;
 		$pk->noClip = $this->isSpectator();
@@ -1566,6 +1566,15 @@ class Player extends Human implements CommandSender, InventoryHolder, ChunkLoade
 						$this->teleport($ev->getTo());
 					}else{
 						$this->level->addEntityMovement($this->x >> 4, $this->z >> 4, $this->getId(), $this->x, $this->y + $this->getEyeHeight(), $this->z, $this->yaw, $this->pitch, $this->yaw);
+
+						$distance = $from->distance($to);
+
+						//TODO: check swimming (adds 0.015 exhaustion in MCPE)
+						if($this->isSprinting()){
+							$this->exhaust(0.1 * $distance, PlayerExhaustEvent::CAUSE_SPRINTING);
+						}else{
+							$this->exhaust(0.01 * $distance, PlayerExhaustEvent::CAUSE_WALKING);
+						}
 					}
 				}
 			}
@@ -1695,6 +1704,20 @@ class Player extends Human implements CommandSender, InventoryHolder, ChunkLoade
 		$this->timings->stopTiming();
 
 		return true;
+	}
+
+	public function doFoodTick(int $tickDiff = 1){
+		if($this->isSurvival()){
+			parent::doFoodTick($tickDiff);
+		}
+	}
+
+	public function exhaust(float $amount, int $cause = PlayerExhaustEvent::CAUSE_CUSTOM) : float{
+		if($this->isSurvival()){
+			return parent::exhaust($amount, $cause);
+		}
+
+		return 0.0;
 	}
 
 	public function checkNetwork(){
@@ -1989,7 +2012,7 @@ class Player extends Human implements CommandSender, InventoryHolder, ChunkLoade
 						//Client requested a resource pack but we don't have it available on the server
 						$this->close("", "disconnectionScreen.resourcePack", true);
 						$this->server->getLogger()->debug("Got a resource pack request for unknown pack with UUID " . $uuid . ", available packs: " . implode(", ", $manager->getPackIdList()));
-						break;
+						return false;
 					}
 
 					$pk = new ResourcePackDataInfoPacket();
@@ -2390,7 +2413,7 @@ class Player extends Human implements CommandSender, InventoryHolder, ChunkLoade
 				break; //TODO: handle these
 			default:
 				$this->server->getLogger()->debug("Unhandled/unknown interaction type " . $packet->action . "received from ". $this->getName());
-				break;
+				return false;
 		}
 
 		return true;
@@ -2674,9 +2697,13 @@ class Player extends Human implements CommandSender, InventoryHolder, ChunkLoade
 				$this->deadTicks = 0;
 				$this->noDamageTicks = 60;
 
+				$this->removeAllEffects();
 				$this->setHealth($this->getMaxHealth());
 
-				$this->removeAllEffects();
+				foreach($this->attributeMap->getAll() as $attr){
+					$attr->resetToDefault();
+				}
+
 				$this->sendData($this);
 
 				$this->sendSettings();
@@ -2687,6 +2714,7 @@ class Player extends Human implements CommandSender, InventoryHolder, ChunkLoade
 				$this->scheduleUpdate();
 				break;
 			case PlayerActionPacket::ACTION_JUMP:
+				$this->jump();
 				return true;
 			case PlayerActionPacket::ACTION_START_SPRINT:
 				$ev = new PlayerToggleSprintEvent($this, true);
@@ -2696,7 +2724,7 @@ class Player extends Human implements CommandSender, InventoryHolder, ChunkLoade
 				}else{
 					$this->setSprinting(true);
 				}
-				break;
+				return true;
 			case PlayerActionPacket::ACTION_STOP_SPRINT:
 				$ev = new PlayerToggleSprintEvent($this, false);
 				$this->server->getPluginManager()->callEvent($ev);
@@ -2705,7 +2733,7 @@ class Player extends Human implements CommandSender, InventoryHolder, ChunkLoade
 				}else{
 					$this->setSprinting(false);
 				}
-				break;
+				return true;
 			case PlayerActionPacket::ACTION_START_SNEAK:
 				$ev = new PlayerToggleSneakEvent($this, true);
 				$this->server->getPluginManager()->callEvent($ev);
@@ -2729,7 +2757,7 @@ class Player extends Human implements CommandSender, InventoryHolder, ChunkLoade
 				break; //TODO
 			default:
 				$this->server->getLogger()->debug("Unhandled/unknown player action type " . $packet->action . " from " . $this->getName());
-				break;
+				return false;
 		}
 
 		$this->startAction = -1;
@@ -3292,7 +3320,7 @@ class Player extends Human implements CommandSender, InventoryHolder, ChunkLoade
 			$this->close("", "disconnectionScreen.resourcePack", true);
 			$this->server->getLogger()->debug("Got a resource pack chunk request for unknown pack with UUID " . $packet->packId . ", available packs: " . implode(", ", $manager->getPackIdList()));
 
-			return true;
+			return false;
 		}
 
 		$pk = new ResourcePackChunkDataPacket();
@@ -3320,11 +3348,6 @@ class Player extends Human implements CommandSender, InventoryHolder, ChunkLoade
 		return false;
 	}
 
-	public function handleUnknown(UnknownPacket $packet) : bool{
-		$this->server->getLogger()->debug("Received unknown packet from " . $this->getName() . ": 0x" . bin2hex($packet->payload));
-		return true;
-	}
-
 	/**
 	 * Called when a packet is received from the client. This method will call DataPacketReceiveEvent.
 	 *
@@ -3343,7 +3366,7 @@ class Player extends Human implements CommandSender, InventoryHolder, ChunkLoade
 
 		$this->server->getPluginManager()->callEvent($ev = new DataPacketReceiveEvent($this, $packet));
 		if(!$ev->isCancelled() and !$packet->handle($this)){
-			$this->server->getLogger()->debug("Unhandled " . get_class($packet) . " received from " . $this->getName());
+			$this->server->getLogger()->debug("Unhandled " . $packet->getName() . " received from " . $this->getName() . ": 0x" . bin2hex($packet->buffer));
 		}
 
 		$timings->stopTiming();
@@ -3417,10 +3440,19 @@ class Player extends Human implements CommandSender, InventoryHolder, ChunkLoade
 	 */
 	public function addTitle(string $title, string $subtitle = "", int $fadeIn = -1, int $stay = -1, int $fadeOut = -1){
 		$this->setTitleDuration($fadeIn, $stay, $fadeOut);
-		$this->sendTitleText($title, SetTitlePacket::TYPE_SET_TITLE);
 		if($subtitle !== ""){
-			$this->sendTitleText($subtitle, SetTitlePacket::TYPE_SET_SUBTITLE);
+			$this->addSubTitle($subtitle);
 		}
+		$this->sendTitleText($title, SetTitlePacket::TYPE_SET_TITLE);
+	}
+
+	/**
+	 * Sets the subtitle message, without sending a title.
+	 *
+	 * @param string $subtitle
+	 */
+	public function addSubTitle(string $subtitle){
+	    $this->sendTitleText($subtitle, SetTitlePacket::TYPE_SET_SUBTITLE);
 	}
 
 	/**
@@ -3439,6 +3471,15 @@ class Player extends Human implements CommandSender, InventoryHolder, ChunkLoade
 		$pk = new SetTitlePacket();
 		$pk->type = SetTitlePacket::TYPE_CLEAR_TITLE;
 		$this->dataPacket($pk);
+	}
+
+	/**
+	 * Resets the title duration settings.
+	 */
+	public function resetTitles(){
+	    $pk = new SetTitlePacket();
+	    $pk->type = SetTitlePacket::TYPE_RESET_TITLE;
+	    $this->dataPacket($pk);
 	}
 
 	/**
@@ -3543,7 +3584,7 @@ class Player extends Human implements CommandSender, InventoryHolder, ChunkLoade
 	 * @param string $reason  Reason showed in console
 	 * @param bool   $notify
 	 */
-	public final function close($message = "", $reason = "generic reason", $notify = true){
+	final public function close($message = "", $reason = "generic reason", $notify = true){
 		if($this->connected and !$this->closed){
 			if($notify and strlen((string) $reason) > 0){
 				$pk = new DisconnectPacket();
@@ -3686,6 +3727,17 @@ class Player extends Human implements CommandSender, InventoryHolder, ChunkLoade
 			return;
 		}
 
+		parent::kill();
+
+		$pk = new RespawnPacket();
+		$pos = $this->getSpawn();
+		$pk->x = $pos->x;
+		$pk->y = $pos->y;
+		$pk->z = $pos->z;
+		$this->dataPacket($pk);
+	}
+
+	protected function callDeathEvent(){
 		$message = "death.attack.generic";
 
 		$params = [
@@ -3795,9 +3847,8 @@ class Player extends Human implements CommandSender, InventoryHolder, ChunkLoade
 				break;
 
 			default:
+				break;
 		}
-
-		Entity::kill();
 
 		$this->server->getPluginManager()->callEvent($ev = new PlayerDeathEvent($this, $this->getDrops(), new TranslationContainer($message, $params)));
 
@@ -3816,13 +3867,6 @@ class Player extends Human implements CommandSender, InventoryHolder, ChunkLoade
 		if($ev->getDeathMessage() != ""){
 			$this->server->broadcast($ev->getDeathMessage(), Server::BROADCAST_CHANNEL_USERS);
 		}
-
-		$pk = new RespawnPacket();
-		$pos = $this->getSpawn();
-		$pk->x = $pos->x;
-		$pk->y = $pos->y;
-		$pk->z = $pos->z;
-		$this->dataPacket($pk);
 	}
 
 	public function attack($damage, EntityDamageEvent $source){
@@ -4073,7 +4117,9 @@ class Player extends Human implements CommandSender, InventoryHolder, ChunkLoade
 	}
 
 	public function onChunkChanged(Chunk $chunk){
-		unset($this->usedChunks[Level::chunkHash($chunk->getX(), $chunk->getZ())]);
+		if(isset($this->usedChunks[$hash = Level::chunkHash($chunk->getX(), $chunk->getZ())])){
+			$this->usedChunks[$hash] = false;
+		}
 	}
 
 	public function onChunkLoaded(Chunk $chunk){

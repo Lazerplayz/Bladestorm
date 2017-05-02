@@ -19,18 +19,10 @@
  *
 */
 
-namespace pocketmine\block;
+
+namespace pocketmine\level\format\io\region;
 
 
-class Furnace extends BurningFurnace{
+class CorruptedRegionException extends RegionException{
 
-	protected $id = self::FURNACE;
-
-	public function getName(){
-		return "Furnace";
-	}
-
-	public function getLightLevel(){
-		return 0;
-	}
 }

@@ -50,7 +50,8 @@ use pocketmine\command\defaults\StopCommand;
 use pocketmine\command\defaults\TeleportCommand;
 use pocketmine\command\defaults\TellCommand;
 use pocketmine\command\defaults\TimeCommand;
-//use pocketmine\command\defaults\TimingsCommand;
+use pocketmine\command\defaults\TimingsCommand;
+use pocketmine\command\defaults\TitleCommand;
 use pocketmine\command\defaults\TransferServerCommand;
 use pocketmine\command\defaults\VanillaCommand;
 use pocketmine\command\defaults\VersionCommand;
@@ -104,7 +105,8 @@ class SimpleCommandMap implements CommandMap{
 		$this->register("pocketmine", new SetWorldSpawnCommand("setworldspawn"));
 		$this->register("pocketmine", new TeleportCommand("tp"));
 		$this->register("pocketmine", new TimeCommand("time"));
-		//$this->register("pocketmine", new TimingsCommand("timings"));
+		$this->register("pocketmine", new TimingsCommand("timings"));
+		$this->register("pocketmine", new TitleCommand("title"));
 		$this->register("pocketmine", new TransferServerCommand("transferserver"));
 
 		if($this->server->getProperty("debug.commands", false)){
