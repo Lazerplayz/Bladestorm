@@ -177,7 +177,7 @@ class BinaryStream extends \stdClass{
 	}
 
 	public function getUUID(){
-		//This is actually two little-endian longs: UUID Least followed by UUID Most
+		//This is actually two little-endian longs: UUID Most followed by UUID Least
 		$part1 = $this->getLInt();
 		$part0 = $this->getLInt();
 		$part3 = $this->getLInt();
