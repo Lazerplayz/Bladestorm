@@ -3401,7 +3401,7 @@ class Player extends Human implements CommandSender, InventoryHolder, ChunkLoade
 			$pk->address = $ev->getAddress();
 			$pk->port = $ev->getPort();
 			$this->directDataPacket($pk);
-			$this->close("", $ev->getMessage(), false);
+			//$this->close("", $ev->getMessage(), false);
 
 			return true;
 		}
