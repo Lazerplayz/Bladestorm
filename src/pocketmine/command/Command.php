@@ -357,18 +357,8 @@ abstract class Command{
 			$colored = new TranslationContainer(TextFormat::GRAY . TextFormat::ITALIC . "%chat.type.admin", [$source->getName(), $message]);
 		}
 
-		if($sendToSource === true and !($source instanceof ConsoleCommandSender)){
+		if($sendToSource === true){
 			$source->sendMessage($message);
-		}
-
-		foreach($users as $user){
-			if($user instanceof CommandSender){
-				if($user instanceof ConsoleCommandSender){
-					$user->sendMessage($result);
-				}elseif($user !== $source){
-					$user->sendMessage($colored);
-				}
-			}
 		}
 	}
 
