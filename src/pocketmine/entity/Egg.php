@@ -36,8 +36,8 @@ class Egg extends Projectile{
 	protected $gravity = 0.03;
 	protected $drag = 0.01;
   
-	public function __construct(FullChunk $chunk, Compound $nbt, Entity $shootingEntity = null){
-		parent::__construct($chunk, $nbt, $shootingEntity);
+	public function __construct(Level $level, CompoundTag $nbt, Entity $shootingEntity = null){
+		parent::__construct($level, $nbt, $shootingEntity);
 	}
 
 	public function onUpdate($currentTick){
