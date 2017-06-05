@@ -27,6 +27,7 @@ namespace pocketmine\entity;
 use pocketmine\block\Block;
 use pocketmine\block\FlowingWater;
 use pocketmine\entity\projectile\Arrow;
+use pocketmine\entity\projectile\Egg;
 use pocketmine\entity\projectile\Snowball;
 use pocketmine\entity\projectile\SplashPotion;
 use pocketmine\event\entity\EntityDamageEvent;

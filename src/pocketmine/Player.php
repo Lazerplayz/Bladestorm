@@ -2486,44 +2486,6 @@ class Player extends Human implements CommandSender, InventoryHolder, ChunkLoade
 				$this->setUsingItem(true);
 			}
 
-			if($item->getId() === Item::EGG){
- 				$nbt = new CompoundTag("", [
- 					"Pos" => new ListTag("Pos", [
- 						new DoubleTag("", $this->x),
- 						new DoubleTag("", $this->y + $this->getEyeHeight()),
- 						new DoubleTag("", $this->z)
- 					]),
- 					"Motion" => new ListTag("Motion", [
- 						new DoubleTag("", -sin($this->yaw / 180 * M_PI) * cos($this->pitch / 180 * M_PI)),
- 						new DoubleTag("", -sin($this->pitch / 180 * M_PI)),
- 						new DoubleTag("", cos($this->yaw / 180 * M_PI) * cos($this->pitch / 180 * M_PI))
- 					]),
- 					"Rotation" => new ListTag("Rotation", [
- 						new FloatTag("", $this->yaw),
- 						new FloatTag("", $this->pitch)
- 					]),
- 				]);
-
- 				$f = 1.5;
- 				$egg = Entity::createEntity("Egg", $this->getLevel(), $nbt, $this);
- 				$egg->setMotion($egg->getMotion()->multiply($f));
- 				if($this->isSurvival()){
- 					$item->setCount($item->getCount() - 1);
- 					$this->inventory->setItemInHand($item->getCount() > 0 ? $item : Item::get(Item::AIR));
- 				}
- 				if($egg instanceof Projectile){
- 					$this->server->getPluginManager()->callEvent($projectileEv = new ProjectileLaunchEvent($egg));
- 					if($projectileEv->isCancelled()){
- 						$egg->kill();
- 					}else{
- 						$egg->spawnToAll();
- 						$this->level->addSound(new LaunchSound($this), $this->getViewers());
- 					}
- 				}else{
- 					$egg->spawnToAll();
- 				}
- 			}
-
 			$this->setDataFlag(self::DATA_FLAGS, self::DATA_FLAG_ACTION, true);
 			$this->startAction = $this->server->getTick();
 		}

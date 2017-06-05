@@ -23,21 +23,41 @@ namespace pocketmine\entity;
 
 use pocketmine\level\Level;
 use pocketmine\nbt\tag\CompoundTag;
-use pocketmine\Player;
 use pocketmine\network\mcpe\protocol\AddEntityPacket;
+use pocketmine\Player;
 
-class Egg extends Projectile{
-	const NETWORK_ID = 82;
-  
-	public $width = 0.25;
-	public $length = 0.25;
-	public $height = 0.25;
-  
-	protected $gravity = 0.03;
+class Arrow extends Projectile{
+	const NETWORK_ID = 80;
+
+	public $width = 0.5;
+	public $length = 0.5;
+	public $height = 0.5;
+
+	protected $gravity = 0.05;
 	protected $drag = 0.01;
-  
-	public function __construct(Level $level, CompoundTag $nbt, Entity $shootingEntity = null){
+
+	protected $damage = 2;
+
+	public function __construct(Level $level, CompoundTag $nbt, Entity $shootingEntity = null, bool $critical = false){
 		parent::__construct($level, $nbt, $shootingEntity);
+		$this->setCritical($critical);
+	}
+
+	public function isCritical() : bool{
+		return $this->getDataFlag(self::DATA_FLAGS, self::DATA_FLAG_CRITICAL);
+	}
+
+	public function setCritical(bool $value = true){
+		$this->setDataFlag(self::DATA_FLAGS, self::DATA_FLAG_CRITICAL, $value);
+	}
+
+	public function getResultDamage() : int{
+		$base = parent::getResultDamage();
+		if($this->isCritical()){
+			return ($base + mt_rand(0, (int) ($base / 2) + 1));
+		}else{
+			return $base;
+		}
 	}
 
 	public function onUpdate($currentTick){
@@ -49,8 +69,12 @@ class Egg extends Projectile{
 
 		$hasUpdate = parent::onUpdate($currentTick);
 
-		if($this->age > 1200 or $this->isCollided){
-			$this->kill();
+		if($this->onGround or $this->hadCollision){
+			$this->setCritical(false);
+		}
+
+		if($this->age > 1200){
+			$this->close();
 			$hasUpdate = true;
 		}
 
@@ -61,7 +85,7 @@ class Egg extends Projectile{
 
 	public function spawnTo(Player $player){
 		$pk = new AddEntityPacket();
-		$pk->type = Egg::NETWORK_ID;
+		$pk->type = Arrow::NETWORK_ID;
 		$pk->entityRuntimeId = $this->getId();
 		$pk->x = $this->x;
 		$pk->y = $this->y;
@@ -69,6 +93,8 @@ class Egg extends Projectile{
 		$pk->speedX = $this->motionX;
 		$pk->speedY = $this->motionY;
 		$pk->speedZ = $this->motionZ;
+		$pk->yaw = $this->yaw;
+		$pk->pitch = $this->pitch;
 		$pk->metadata = $this->dataProperties;
 		$player->dataPacket($pk);
 
