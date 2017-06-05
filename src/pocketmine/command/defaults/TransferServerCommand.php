@@ -33,7 +33,8 @@ class TransferServerCommand extends VanillaCommand{
 		parent::__construct(
 			$name,
 			"%pocketmine.command.transferserver.description",
-			"%pocketmine.command.transferserver.usage"
+			"%pocketmine.command.transferserver.usage",
+			["transfer"]
 		);
 		$this->setPermission("pocketmine.command.transferserver");
 	}

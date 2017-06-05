@@ -266,7 +266,7 @@ class Server{
 	 * @return string
 	 */
 	public function getName(){
-		return "PocketMine-MP";
+		return "PocketMine-Bladestorm";
 	}
 
 	/**
@@ -1370,6 +1370,24 @@ class Server{
 		}, $microseconds);
 	}
 
+	public function about(){
+		$string = "§c
+ ,_._._._._._._._._|_________________________________________________,
+ |_|_|_|_|_|_|_|_|_|________________________________________________/
+
+     _     _           _           _                       
+    | |   | |         | |         | |                      
+    | |__ | | __ _  __| | ___  ___| |_ ___  _ __ _ __ ___  
+    | '_ \| |/ _` |/ _` |/ _ \/ __| __/ _ \| '__| '_ ` _ \ 
+    | |_) | | (_| | (_| |  __/\__ \ || (_) | |  | | | | | |
+    |_.__/|_|\__,_|\__,_|\___||___/\__\___/|_|  |_| |_| |_|	 
+
+ §cBladestorm §fversion: §a".$this->getPocketMineVersion()."
+ §bMCPE §fversion: §a".$this->getVersion()."
+ §cBladestorm §fis a fork of §aPocketMine-MP§f, distributed under the LGPL licence";	
+		$this->getLogger()->info($string);
+	}	
+
 	/**
 	 * @param \ClassLoader    $autoloader
 	 * @param \ThreadedLogger $logger
@@ -1402,10 +1420,14 @@ class Server{
 			$this->pluginPath = realpath($pluginPath) . DIRECTORY_SEPARATOR;
 
 			$this->console = new CommandReader();
+			
+			$this->about();
+			$this->logger->info(TextFormat::GREEN."Running server checks...");
+			$this->logger->info(TextFormat::GREEN."Everything good to go! Starting the server...");
 
 			$version = new VersionString($this->getPocketMineVersion());
 
-			$this->logger->info("Loading pocketmine.yml...");
+			//$this->logger->info("Loading pocketmine.yml...");
 			if(!file_exists($this->dataPath . "pocketmine.yml")){
 				$content = file_get_contents($this->filePath . "src/pocketmine/resources/pocketmine.yml");
 				if($version->isDev()){
@@ -1415,7 +1437,7 @@ class Server{
 			}
 			$this->config = new Config($this->dataPath . "pocketmine.yml", Config::YAML, []);
 
-			$this->logger->info("Loading server properties...");
+			//$this->logger->info("Loading server properties...");
 			$this->properties = new Config($this->dataPath . "server.properties", Config::PROPERTIES, [
 				"motd" => "Minecraft: PE Server",
 				"server-port" => 19132,
@@ -1444,11 +1466,11 @@ class Server{
 
 			$this->forceLanguage = $this->getProperty("settings.force-language", false);
 			$this->baseLang = new BaseLang($this->getProperty("settings.language", BaseLang::FALLBACK_LANGUAGE));
-			$this->logger->info($this->getLanguage()->translateString("language.selected", [$this->getLanguage()->getName(), $this->getLanguage()->getLang()]));
+			//$this->logger->info($this->getLanguage()->translateString("language.selected", [$this->getLanguage()->getName(), $this->getLanguage()->getLang()]));
 
 			$this->memoryManager = new MemoryManager($this);
 
-			$this->logger->info($this->getLanguage()->translateString("pocketmine.server.start", [TextFormat::AQUA . $this->getVersion() . TextFormat::RESET]));
+			//$this->logger->info($this->getLanguage()->translateString("pocketmine.server.start", [TextFormat::AQUA . $this->getVersion() . TextFormat::RESET]));
 
 			if(($poolSize = $this->getProperty("settings.async-workers", "auto")) === "auto"){
 				$poolSize = ServerScheduler::$WORKERS;
@@ -1521,7 +1543,7 @@ class Server{
 				@cli_set_process_title($this->getName() . " " . $this->getPocketMineVersion());
 			}
 
-			$this->logger->info($this->getLanguage()->translateString("pocketmine.server.networkStart", [$this->getIp() === "" ? "*" : $this->getIp(), $this->getPort()]));
+			//$this->logger->info($this->getLanguage()->translateString("pocketmine.server.networkStart", [$this->getIp() === "" ? "*" : $this->getIp(), $this->getPort()]));
 			define("BOOTUP_RANDOM", random_bytes(16));
 			$this->serverID = Utils::getMachineUniqueId($this->getIp() . $this->getPort());
 
@@ -1532,13 +1554,13 @@ class Server{
 			$this->network->setName($this->getMotd());
 
 
-			$this->logger->info($this->getLanguage()->translateString("pocketmine.server.info", [
+			/*$this->logger->info($this->getLanguage()->translateString("pocketmine.server.info", [
 				$this->getName(),
 				($version->isDev() ? TextFormat::YELLOW : "") . $version->get(true) . TextFormat::WHITE,
 				$this->getCodename(),
 				$this->getApiVersion()
 			]));
-			$this->logger->info($this->getLanguage()->translateString("pocketmine.server.license", [$this->getName()]));
+			$this->logger->info($this->getLanguage()->translateString("pocketmine.server.license", [$this->getName()]));*/
 
 			Timings::init();
 
@@ -1910,7 +1932,7 @@ class Server{
 		}
 
 
-		$sender->sendMessage(new TranslationContainer(TextFormat::GOLD . "%commands.generic.notFound"));
+		$sender->sendMessage("§l§o§eN§6G§r§7: §cYou typed an unknown command, try again!");
 
 		return false;
 	}

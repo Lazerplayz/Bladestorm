@@ -33,8 +33,7 @@ class VersionCommand extends VanillaCommand{
 		parent::__construct(
 			$name,
 			"%pocketmine.command.version.description",
-			"%pocketmine.command.version.usage",
-			["ver", "about"]
+			"%pocketmine.command.version.usage"
 		);
 		$this->setPermission("pocketmine.command.version");
 	}
