@@ -19,8 +19,12 @@
  *
 */
 
+declare(strict_types=1);
+
 namespace pocketmine\item;
 
+
+use pocketmine\item\enchantment\Enchantment;
 
 abstract class Tool extends Durable{
 
@@ -48,8 +52,16 @@ abstract class Tool extends Durable{
 
 	abstract public function getToolType() : int;
 
-	public function getAttackPoints() : int{
-		return $this->attackPoints;
+	public function getAttackPoints() : float{
+		$points = $this->attackPoints;
+
+		if(($ench = $this->getEnchantment(Enchantment::SHARPNESS)) !== null){
+			$points += ($ench->getLevel() + 1); //In PC this is multiplied by 0.5
+		}
+
+		//TODO: Bane of Arthropods and Smite
+
+		return $points;
 	}
 
 	//TODO: remove this mess
