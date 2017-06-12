@@ -23,7 +23,6 @@ declare(strict_types=1);
 
 namespace pocketmine\block;
 
-use pocketmine\item\Item;
 use pocketmine\item\TieredTool;
 use pocketmine\item\Tool;
 use pocketmine\math\AxisAlignedBB;
@@ -45,6 +44,10 @@ class CobblestoneWall extends Transparent{
 
 	public function getToolType(){
 		return Tool::TYPE_PICKAXE;
+	}
+
+	public function getRequiredHarvestLevel() : int{
+		return TieredTool::TIER_WOODEN;
 	}
 
 	public function getHardness(){
@@ -92,15 +95,4 @@ class CobblestoneWall extends Transparent{
 	public function canConnect(Block $block){
 		return ($block->isSolid() and !$block->isTransparent()) or $block instanceof CobblestoneWall or $block instanceof FenceGate;
 	}
-
-	public function getDrops(Item $item){
-		if($item->isPickaxe() >= TieredTool::TIER_WOODEN){
-			return [
-				Item::get($this->getId(), $this->getDamage(), 1)
-			];
-		}else{
-			return [];
-		}
-	}
-
 }

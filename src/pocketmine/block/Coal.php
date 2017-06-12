@@ -23,7 +23,6 @@ declare(strict_types=1);
 
 namespace pocketmine\block;
 
-use pocketmine\item\Item;
 use pocketmine\item\TieredTool;
 use pocketmine\item\Tool;
 
@@ -43,17 +42,15 @@ class Coal extends Solid{
 		return Tool::TYPE_PICKAXE;
 	}
 
-	public function getName(){
-		return "Coal Block";
+	public function getRequiredHarvestLevel() : int{
+		return TieredTool::TIER_WOODEN;
 	}
 
-	public function getDrops(Item $item){
-		if($item->isPickaxe() >= TieredTool::TIER_WOODEN){
-			return [
-				Item::get($this->getId(), 0, 1)
-			];
-		}else{
-			return [];
-		}
+	public function getVariantBitmask() : int{
+		return 0;
+	}
+
+	public function getName(){
+		return "Coal Block";
 	}
 }

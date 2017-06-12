@@ -935,34 +935,18 @@ class Item implements ItemIds, \JsonSerializable{
 		return false;
 	}
 
+	public function getBlockBreakingToolType() : int{
+		return Tool::TYPE_NONE;
+	}
+
+	public function getToolHarvestLevel() : int{
+		return 0;
+	}
+
 	/**
 	 * @return int|bool
 	 */
 	public function getMaxDurability(){
-		return false;
-	}
-
-	public function isPickaxe(){
-		return false;
-	}
-
-	public function isAxe(){
-		return false;
-	}
-
-	public function isSword(){
-		return false;
-	}
-
-	public function isShovel(){
-		return false;
-	}
-
-	public function isHoe(){
-		return false;
-	}
-
-	public function isShears(){
 		return false;
 	}
 

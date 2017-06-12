@@ -23,7 +23,6 @@ declare(strict_types=1);
 
 namespace pocketmine\block;
 
-use pocketmine\item\Item;
 use pocketmine\item\TieredTool;
 use pocketmine\item\Tool;
 
@@ -56,13 +55,11 @@ class Prismarine extends Solid{
 		return Tool::TYPE_PICKAXE;
 	}
 
-	public function getDrops(Item $item){
-		if($item->isPickaxe() >= TieredTool::TIER_WOODEN){
-			return [
-				Item::get($this->id, $this->meta & 0x03, 1)
-			];
-		}else{
-			return [];
-		}
+	public function getRequiredHarvestLevel() : int{
+		return TieredTool::TIER_WOODEN;
+	}
+
+	public function getVariantBitmask() : int{
+		return 0x03;
 	}
 }
