@@ -709,14 +709,14 @@ class Player extends Human implements CommandSender, InventoryHolder, ChunkLoade
 	public function setDisplayName($name){
 		$this->displayName = $name;
 		if($this->spawned){
-			$this->server->updatePlayerListData($this->getUniqueId(), $this->getId(), $this->getDisplayName(), $this->getSkinId(), $this->getSkinData());
+			$this->server->updatePlayerListData($this->getUniqueId(), $this->getId(), $this->getNameTag(), $this->getSkinId(), $this->getSkinData());
 		}
 	}
 
 	public function setSkin($str, $skinId){
 		parent::setSkin($str, $skinId);
 		if($this->spawned){
-			$this->server->updatePlayerListData($this->getUniqueId(), $this->getId(), $this->getDisplayName(), $skinId, $str);
+			$this->server->updatePlayerListData($this->getUniqueId(), $this->getId(), $this->getNameTag(), $skinId, $str);
 		}
 	}
 
