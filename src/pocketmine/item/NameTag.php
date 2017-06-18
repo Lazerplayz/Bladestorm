@@ -21,32 +21,23 @@
 
 declare(strict_types=1);
 
-namespace pocketmine\event\inventory;
+namespace pocketmine\item;
 
-use pocketmine\event\Cancellable;
-use pocketmine\inventory\Inventory;
+use pocketmine\entity\Entity;
 use pocketmine\Player;
 
-class InventoryOpenEvent extends InventoryEvent implements Cancellable{
-	public static $handlerList = null;
+class NameTag extends Item{
 
-	/** @var Player */
-	private $who;
+	public function onInteractWithEntity(Entity $entity, Player $player = null) : bool{
+		if($entity->canBeNamed() and $this->hasCustomName()){
+			$entity->setNameTag($this->getCustomName());
+			$entity->setNameTagVisible(true);
+			//TODO: set persistent (don't despawn)
+			$this->count--;
+			return true;
+		}
 
-	/**
-	 * @param Inventory $inventory
-	 * @param Player    $who
-	 */
-	public function __construct(Inventory $inventory, Player $who){
-		$this->who = $who;
-		parent::__construct($inventory);
-	}
-
-	/**
-	 * @return Player
-	 */
-	public function getPlayer(){
-		return $this->who;
+		return false;
 	}
 
 }
