@@ -1508,7 +1508,18 @@ class Server{
 			$this->scheduler = new ServerScheduler();
 
 			if($this->getConfigBoolean("enable-rcon", false) === true){
-				$this->rcon = new RCON($this, $this->getConfigString("rcon.password", ""), $this->getConfigInt("rcon.port", $this->getPort()), ($ip = $this->getIp()) != "" ? $ip : "0.0.0.0", $this->getConfigInt("rcon.threads", 1), $this->getConfigInt("rcon.clients-per-thread", 50));
+				try{
+					$this->rcon = new RCON(
+						$this,
+						$this->getConfigString("rcon.password", ""),
+						$this->getConfigInt("rcon.port", $this->getPort()),
+						($ip = $this->getIp()) != "" ? $ip : "0.0.0.0",
+						$this->getConfigInt("rcon.threads", 1),
+						$this->getConfigInt("rcon.clients-per-thread", 50)
+					);
+				}catch(\Throwable $e){
+					$this->getLogger()->critical("RCON can't be started: " . $e->getMessage());
+				}
 			}
 
 			$this->entityMetadata = new EntityMetadataStore();
@@ -2164,15 +2175,15 @@ class Server{
 					if($p instanceof Plugin and !($p->getPluginLoader() instanceof PharPluginLoader)){
 						$report = false;
 					}
-				}elseif(\Phar::running(true) === ""){
-					$report = false;
 				}
+
 				if($dump->getData()["error"]["type"] === "E_PARSE" or $dump->getData()["error"]["type"] === "E_COMPILE_ERROR"){
 					$report = false;
 				}
 
 				if($report){
-					$reply = Utils::postURL("http://" . $this->getProperty("auto-report.host", "crash.pocketmine.net") . "/submit/api", [
+					$url = ($this->getProperty("auto-report.use-https", true) ? "https" : "http") . "://" . $this->getProperty("auto-report.host", "crash.pmmp.io") . "/submit/api";
+					$reply = Utils::postURL($url, [
 						"report" => "yes",
 						"name" => $this->getName() . " " . $this->getPocketMineVersion(),
 						"email" => "crash@pocketmine.net",
