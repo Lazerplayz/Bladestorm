@@ -36,21 +36,21 @@ use pocketmine\utils\Random;
 
 class TNT extends Solid{
 
-	protected $id = self::TNT;
+	protected $id = Block::TNT;
 
-	public function __construct($meta = 0){
+	public function __construct(int $meta = 0){
 		$this->meta = $meta;
 	}
 
-	public function getName(){
+	public function getName() : string{
 		return "TNT";
 	}
 
-	public function getHardness(){
+	public function getHardness() : float{
 		return 0;
 	}
 
-	public function onActivate(Item $item, Player $player = null){
+	public function onActivate(Item $item, Player $player = null) : bool{
 		if($item instanceof FlintSteel){
 			$item->applyDamage(1);
 			$this->ignite();

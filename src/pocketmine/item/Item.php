@@ -123,6 +123,7 @@ class Item implements ItemIds, \JsonSerializable{
 				"leggings" => Leggings::class,
 				"map_filled" => FilledMap::class,
 				"name_tag" => NameTag::class,
+				"painting" => Painting::class,
 				"pickaxe" => Pickaxe::class,
 				"potion" => Potion::class,
 				"projectile" => ProjectileItem::class,
@@ -264,7 +265,7 @@ class Item implements ItemIds, \JsonSerializable{
 	/**
 	 * @param $index
 	 *
-	 * @return Item
+	 * @return Item|null
 	 */
 	public static function getCreativeItem(int $index){
 		return Item::$creative[$index] ?? null;
@@ -709,6 +710,11 @@ class Item implements ItemIds, \JsonSerializable{
 		return [];
 	}
 
+	/**
+	 * @param string[] $lines
+	 *
+	 * @return $this
+	 */
 	public function setLore(array $lines){
 		$tag = $this->getNamedTag() ?? new CompoundTag("", []);
 		if(!isset($tag->display)){
@@ -722,6 +728,8 @@ class Item implements ItemIds, \JsonSerializable{
 		}
 
 		$this->setNamedTag($tag);
+
+		return $this;
 	}
 
 	/**
@@ -970,7 +978,7 @@ class Item implements ItemIds, \JsonSerializable{
 	 *
 	 * @return bool
 	 */
-	public function onClickBlock(Player $player, Block $block, Block $blockClicked, int $face, float $fx, float $fy, float $fz){
+	public function onClickBlock(Player $player, Block $block, Block $blockClicked, int $face, float $fx, float $fy, float $fz) : bool{
 		return false;
 	}
 

@@ -26,9 +26,9 @@ namespace pocketmine\block;
 
 class StillLava extends FlowingLava{
 
-	protected $id = self::STILL_LAVA;
+	protected $id = Block::STILL_LAVA;
 
-	public function getName(){
+	public function getName() : string{
 		return "Still Lava";
 	}
 

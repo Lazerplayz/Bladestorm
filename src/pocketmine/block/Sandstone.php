@@ -32,17 +32,17 @@ class Sandstone extends Solid{
 	const CHISELED = 1;
 	const SMOOTH = 2;
 
-	protected $id = self::SANDSTONE;
+	protected $id = Block::SANDSTONE;
 
-	public function __construct($meta = 0){
+	public function __construct(int $meta = 0){
 		$this->meta = $meta;
 	}
 
-	public function getHardness(){
+	public function getHardness() : float{
 		return 0.8;
 	}
 
-	public function getName(){
+	public function getName() : string{
 		static $names = [
 			self::NORMAL => "Sandstone",
 			self::CHISELED => "Chiseled Sandstone",
@@ -52,7 +52,7 @@ class Sandstone extends Solid{
 		return $names[$this->meta & 0x03];
 	}
 
-	public function getToolType(){
+	public function getToolType() : int{
 		return Tool::TYPE_PICKAXE;
 	}
 

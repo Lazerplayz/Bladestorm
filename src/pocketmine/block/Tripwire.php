@@ -27,13 +27,13 @@ use pocketmine\item\Item;
 
 class Tripwire extends Flowable{
 
-	protected $id = self::TRIPWIRE;
+	protected $id = Block::TRIPWIRE;
 
-	public function __construct($meta = 0){
+	public function __construct(int $meta = 0){
 		$this->meta = $meta;
 	}
 
-	public function getName(){
+	public function getName() : string{
 		return "Tripwire";
 	}
 
@@ -41,7 +41,7 @@ class Tripwire extends Flowable{
 		return 0;
 	}
 
-	public function getDrops(Item $item){
+	public function getDrops(Item $item) : array{
 		return [
 			Item::get(Item::STRING, 0, 1)
 		];

@@ -35,21 +35,21 @@ use pocketmine\tile\Tile;
 
 class StandingSign extends Transparent{
 
-	protected $id = self::STANDING_SIGN;
+	protected $id = Block::STANDING_SIGN;
 
-	public function __construct($meta = 0){
+	public function __construct(int $meta = 0){
 		$this->meta = $meta;
 	}
 
-	public function getHardness(){
+	public function getHardness() : float{
 		return 1;
 	}
 
-	public function isSolid(){
+	public function isSolid() : bool{
 		return false;
 	}
 
-	public function getName(){
+	public function getName() : string{
 		return "Sign Post";
 	}
 
@@ -58,7 +58,7 @@ class StandingSign extends Transparent{
 	}
 
 
-	public function place(Item $item, Block $block, Block $target, $face, $fx, $fy, $fz, Player $player = null){
+	public function place(Item $item, Block $block, Block $target, int $face, float $fx, float $fy, float $fz, Player $player = null) : bool{
 		if($face !== 0){
 			$nbt = new CompoundTag("", [
 				new StringTag("id", Tile::SIGN),
@@ -97,9 +97,9 @@ class StandingSign extends Transparent{
 		return false;
 	}
 
-	public function onUpdate($type){
+	public function onUpdate(int $type){
 		if($type === Level::BLOCK_UPDATE_NORMAL){
-			if($this->getSide(Vector3::SIDE_DOWN)->getId() === self::AIR){
+			if($this->getSide(Vector3::SIDE_DOWN)->getId() === Block::AIR){
 				$this->getLevel()->useBreakOn($this);
 
 				return Level::BLOCK_UPDATE_NORMAL;
@@ -109,13 +109,13 @@ class StandingSign extends Transparent{
 		return false;
 	}
 
-	public function getDrops(Item $item){
+	public function getDrops(Item $item) : array{
 		return [
 			Item::get(Item::SIGN, 0, 1)
 		];
 	}
 
-	public function getToolType(){
+	public function getToolType() : int{
 		return Tool::TYPE_AXE;
 	}
 }

@@ -27,13 +27,13 @@ use pocketmine\level\Level;
 
 class WallSign extends StandingSign{
 
-	protected $id = self::WALL_SIGN;
+	protected $id = Block::WALL_SIGN;
 
-	public function getName(){
+	public function getName() : string{
 		return "Wall Sign";
 	}
 
-	public function onUpdate($type){
+	public function onUpdate(int $type){
 		$faces = [
 			2 => 3,
 			3 => 2,
@@ -42,7 +42,7 @@ class WallSign extends StandingSign{
 		];
 		if($type === Level::BLOCK_UPDATE_NORMAL){
 			if(isset($faces[$this->meta])){
-				if($this->getSide($faces[$this->meta])->getId() === self::AIR){
+				if($this->getSide($faces[$this->meta])->getId() === Block::AIR){
 					$this->getLevel()->useBreakOn($this);
 				}
 				return Level::BLOCK_UPDATE_NORMAL;

@@ -36,17 +36,17 @@ class Quartz extends Solid{
 	const QUARTZ_PILLAR = 2;
 	const QUARTZ_PILLAR2 = 3;
 
-	protected $id = self::QUARTZ_BLOCK;
+	protected $id = Block::QUARTZ_BLOCK;
 
-	public function __construct($meta = 0){
+	public function __construct(int $meta = 0){
 		$this->meta = $meta;
 	}
 
-	public function getHardness(){
+	public function getHardness() : float{
 		return 0.8;
 	}
 
-	public function getName(){
+	public function getName() : string{
 		static $names = [
 			self::QUARTZ_NORMAL => "Quartz Block",
 			self::QUARTZ_CHISELED => "Chiseled Quartz Block",
@@ -56,7 +56,7 @@ class Quartz extends Solid{
 		return $names[$this->meta & 0x03];
 	}
 
-	public function getToolType(){
+	public function getToolType() : int{
 		return Tool::TYPE_PICKAXE;
 	}
 
@@ -68,7 +68,7 @@ class Quartz extends Solid{
 		return 0x03;
 	}
 
-	public function place(Item $item, Block $block, Block $target, $face, $fx, $fy, $fz, Player $player = null){
+	public function place(Item $item, Block $block, Block $target, int $face, float $fx, float $fy, float $fz, Player $player = null) : bool{
 		$this->meta &= 0x03;
 
 		if($this->meta !== 0){

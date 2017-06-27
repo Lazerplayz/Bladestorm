@@ -27,9 +27,9 @@ class TrappedChest extends Chest{
 
 	//TODO: Redstone!
 
-	protected $id = self::TRAPPED_CHEST;
+	protected $id = Block::TRAPPED_CHEST;
 
-	public function getName(){
+	public function getName() : string{
 		return "Trapped Chest";
 	}
 }

@@ -28,17 +28,11 @@ use pocketmine\item\Tool;
 
 class WoodenDoor extends Door{
 
-	public function getHardness(){
+	public function getHardness() : float{
 		return 3;
 	}
 
-	public function getToolType(){
+	public function getToolType() : int{
 		return Tool::TYPE_AXE;
-	}
-
-	public function getDrops(Item $item){
-		return [
-			Item::get(Item::WOODEN_DOOR, 0, 1)
-		];
 	}
 }

@@ -27,21 +27,13 @@ use pocketmine\item\Tool;
 
 class WoodenButton extends StoneButton{
 
-	protected $id = self::WOODEN_BUTTON;
+	protected $id = Block::WOODEN_BUTTON;
 
-	public function __construct($meta = 0){
-		$this->meta = $meta;
-	}
-
-	public function getName(){
+	public function getName() : string{
 		return "Wooden Button";
 	}
 
-	public function getToolType(){
+	public function getToolType() : int{
 		return Tool::TYPE_AXE;
-	}
-
-	public function getVariantBitmask() : int{
-		return 0;
 	}
 }

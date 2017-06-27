@@ -21,12 +21,22 @@
 
 declare(strict_types=1);
 
-namespace pocketmine\item;
+namespace pocketmine\block;
 
-class Egg extends Item{
-	public function __construct($meta = 0, $count = 1){
-		parent::__construct(self::EGG, $meta, $count, "Egg");
+
+use pocketmine\item\Item;
+use pocketmine\math\Vector3;
+use pocketmine\Player;
+
+class BoneBlock extends Solid{
+
+	public function place(Item $item, Block $block, Block $target, int $face, float $fx, float $fy, float $fz, Player $player = null) : bool{
+		$faces = [
+			Vector3::SIDE_DOWN => 0,
+			Vector3::SIDE_WEST => 0x04,
+			Vector3::SIDE_NORTH => 0x08
+		];
+		$this->meta = $faces[$face & ~0x01];
+		return $block->getLevel()->setBlock($block, $this, true, true);
 	}
-
 }
-

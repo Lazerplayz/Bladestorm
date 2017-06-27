@@ -28,6 +28,8 @@ namespace pocketmine\entity;
 
 use pocketmine\block\Block;
 use pocketmine\block\FlowingWater;
+use pocketmine\entity\object\PaintingEntity;
+use pocketmine\entity\object\PaintingMotive;
 use pocketmine\entity\projectile\Arrow;
 use pocketmine\entity\projectile\Egg;
 use pocketmine\entity\projectile\Snowball;
@@ -40,6 +42,7 @@ use pocketmine\event\entity\EntityRegainHealthEvent;
 use pocketmine\event\entity\EntitySpawnEvent;
 use pocketmine\event\entity\EntityTeleportEvent;
 use pocketmine\event\Timings;
+use pocketmine\event\TimingsHandler;
 use pocketmine\level\format\Chunk;
 use pocketmine\level\Level;
 use pocketmine\level\Location;
@@ -58,6 +61,7 @@ use pocketmine\nbt\tag\IntTag;
 use pocketmine\nbt\tag\ListTag;
 use pocketmine\nbt\tag\ShortTag;
 use pocketmine\nbt\tag\StringTag;
+use pocketmine\network\mcpe\protocol\AddEntityPacket;
 use pocketmine\network\mcpe\protocol\MobEffectPacket;
 use pocketmine\network\mcpe\protocol\RemoveEntityPacket;
 use pocketmine\network\mcpe\protocol\SetEntityDataPacket;
@@ -216,6 +220,7 @@ abstract class Entity extends Location implements Metadatable{
 		Entity::registerEntity(Egg::class);
 		Entity::registerEntity(FallingSand::class);
 		Entity::registerEntity(Item::class);
+		Entity::registerEntity(PaintingEntity::class);
 		Entity::registerEntity(PrimedTNT::class);
 		Entity::registerEntity(Snowball::class);
 		Entity::registerEntity(SplashPotion::class);
@@ -224,6 +229,10 @@ abstract class Entity extends Location implements Metadatable{
 		Entity::registerEntity(Zombie::class);
 
 		Entity::registerEntity(Human::class, true);
+
+		Attribute::init();
+		Effect::init();
+		PaintingMotive::init();
 	}
 
 	/**
@@ -329,7 +338,7 @@ abstract class Entity extends Location implements Metadatable{
 
 	public $closed = false;
 
-	/** @var \pocketmine\event\TimingsHandler */
+	/** @var TimingsHandler */
 	protected $timings;
 	protected $isPlayer = false;
 
@@ -723,7 +732,7 @@ abstract class Entity extends Location implements Metadatable{
 	 * @param CompoundTag $nbt
 	 * @param             $args
 	 *
-	 * @return Entity
+	 * @return Entity|null
 	 */
 	public static function createEntity($type, Level $level, CompoundTag $nbt, ...$args){
 		if(isset(self::$knownEntities[$type])){
@@ -852,12 +861,29 @@ abstract class Entity extends Location implements Metadatable{
 		return $this->hasSpawned;
 	}
 
+	protected function sendSpawnPacket(Player $player){
+		$pk = new AddEntityPacket();
+		$pk->entityRuntimeId = $this->getId();
+		$pk->type = static::NETWORK_ID;
+		$pk->x = $this->x;
+		$pk->y = $this->y;
+		$pk->z = $this->z;
+		$pk->speedX = $this->motionX;
+		$pk->speedY = $this->motionY;
+		$pk->speedZ = $this->motionZ;
+		$pk->yaw = $this->yaw;
+		$pk->pitch = $this->pitch;
+		$pk->metadata = $this->dataProperties;
+		$player->dataPacket($pk);
+	}
+
 	/**
 	 * @param Player $player
 	 */
 	public function spawnTo(Player $player){
 		if(!isset($this->hasSpawned[$player->getLoaderId()]) and isset($player->usedChunks[Level::chunkHash($this->chunk->getX(), $this->chunk->getZ())])){
 			$this->hasSpawned[$player->getLoaderId()] = $player;
+			$this->sendSpawnPacket($player);
 		}
 	}
 
@@ -1312,13 +1338,13 @@ abstract class Entity extends Location implements Metadatable{
 			$rotation += 360.0;
 		}
 		if((0 <= $rotation and $rotation < 45) or (315 <= $rotation and $rotation < 360)){
-			return 2; //North
+			return Vector2::DIRECTION_NORTH;
 		}elseif(45 <= $rotation and $rotation < 135){
-			return 3; //East
+			return Vector2::DIRECTION_EAST;
 		}elseif(135 <= $rotation and $rotation < 225){
-			return 0; //South
+			return Vector2::DIRECTION_SOUTH;
 		}elseif(225 <= $rotation and $rotation < 315){
-			return 1; //West
+			return Vector2::DIRECTION_WEST;
 		}else{
 			return null;
 		}
@@ -1908,7 +1934,7 @@ abstract class Entity extends Location implements Metadatable{
 	/**
 	 * @param int $id
 	 *
-	 * @return int
+	 * @return int|null
 	 */
 	public function getDataPropertyType($id){
 		return isset($this->dataProperties[$id]) ? $this->dataProperties[$id][0] : null;

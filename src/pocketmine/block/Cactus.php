@@ -36,21 +36,21 @@ use pocketmine\Server;
 
 class Cactus extends Transparent{
 
-	protected $id = self::CACTUS;
+	protected $id = Block::CACTUS;
 
-	public function __construct($meta = 0){
+	public function __construct(int $meta = 0){
 		$this->meta = $meta;
 	}
 
-	public function getHardness(){
+	public function getHardness() : float{
 		return 0.4;
 	}
 
-	public function hasEntityCollision(){
+	public function hasEntityCollision() : bool{
 		return true;
 	}
 
-	public function getName(){
+	public function getName() : string{
 		return "Cactus";
 	}
 
@@ -66,15 +66,19 @@ class Cactus extends Transparent{
 		);
 	}
 
+	public function ticksRandomly() : bool{
+		return true;
+	}
+
 	public function onEntityCollide(Entity $entity){
 		$ev = new EntityDamageByBlockEvent($this, $entity, EntityDamageEvent::CAUSE_CONTACT, 1);
 		$entity->attack($ev);
 	}
 
-	public function onUpdate($type){
+	public function onUpdate(int $type){
 		if($type === Level::BLOCK_UPDATE_NORMAL){
 			$down = $this->getSide(Vector3::SIDE_DOWN);
-			if($down->getId() !== self::SAND and $down->getId() !== self::CACTUS){
+			if($down->getId() !== Block::SAND and $down->getId() !== Block::CACTUS){
 				$this->getLevel()->useBreakOn($this);
 			}else{
 				for($side = 2; $side <= 5; ++$side){
@@ -85,11 +89,11 @@ class Cactus extends Transparent{
 				}
 			}
 		}elseif($type === Level::BLOCK_UPDATE_RANDOM){
-			if($this->getSide(Vector3::SIDE_DOWN)->getId() !== self::CACTUS){
+			if($this->getSide(Vector3::SIDE_DOWN)->getId() !== Block::CACTUS){
 				if($this->meta === 0x0f){
 					for($y = 1; $y < 3; ++$y){
 						$b = $this->getLevel()->getBlock(new Vector3($this->x, $this->y + $y, $this->z));
-						if($b->getId() === self::AIR){
+						if($b->getId() === Block::AIR){
 							Server::getInstance()->getPluginManager()->callEvent($ev = new BlockGrowEvent($b, Block::get(Block::CACTUS)));
 							if(!$ev->isCancelled()){
 								$this->getLevel()->setBlock($b, $ev->getNewState(), true);
@@ -108,9 +112,9 @@ class Cactus extends Transparent{
 		return false;
 	}
 
-	public function place(Item $item, Block $block, Block $target, $face, $fx, $fy, $fz, Player $player = null){
+	public function place(Item $item, Block $block, Block $target, int $face, float $fx, float $fy, float $fz, Player $player = null) : bool{
 		$down = $this->getSide(Vector3::SIDE_DOWN);
-		if($down->getId() === self::SAND or $down->getId() === self::CACTUS){
+		if($down->getId() === Block::SAND or $down->getId() === Block::CACTUS){
 			$block0 = $this->getSide(Vector3::SIDE_NORTH);
 			$block1 = $this->getSide(Vector3::SIDE_SOUTH);
 			$block2 = $this->getSide(Vector3::SIDE_WEST);

@@ -33,8 +33,6 @@ use pocketmine\command\CommandSender;
 use pocketmine\command\ConsoleCommandSender;
 use pocketmine\command\PluginIdentifiableCommand;
 use pocketmine\command\SimpleCommandMap;
-use pocketmine\entity\Attribute;
-use pocketmine\entity\Effect;
 use pocketmine\entity\Entity;
 use pocketmine\event\HandlerList;
 use pocketmine\event\level\LevelInitEvent;
@@ -54,6 +52,7 @@ use pocketmine\item\Item;
 use pocketmine\item\Potion;
 use pocketmine\lang\BaseLang;
 use pocketmine\level\format\io\leveldb\LevelDB;
+use pocketmine\level\format\io\LevelProvider;
 use pocketmine\level\format\io\LevelProviderManager;
 use pocketmine\level\format\io\region\Anvil;
 use pocketmine\level\format\io\region\McRegion;
@@ -1048,7 +1047,7 @@ class Server{
 
 		try{
 			$path = $this->getDataPath() . "worlds/" . $name . "/";
-			/** @var \pocketmine\level\format\io\LevelProvider $provider */
+			/** @var LevelProvider $provider */
 			$provider::generate($path, $name, $seed, $generator, $options);
 
 			$level = new Level($this, $name, $path, (string) $provider);
@@ -1509,7 +1508,18 @@ class Server{
 			$this->scheduler = new ServerScheduler();
 
 			if($this->getConfigBoolean("enable-rcon", false) === true){
-				$this->rcon = new RCON($this, $this->getConfigString("rcon.password", ""), $this->getConfigInt("rcon.port", $this->getPort()), ($ip = $this->getIp()) != "" ? $ip : "0.0.0.0", $this->getConfigInt("rcon.threads", 1), $this->getConfigInt("rcon.clients-per-thread", 50));
+				try{
+					$this->rcon = new RCON(
+						$this,
+						$this->getConfigString("rcon.password", ""),
+						$this->getConfigInt("rcon.port", $this->getPort()),
+						($ip = $this->getIp()) != "" ? $ip : "0.0.0.0",
+						$this->getConfigInt("rcon.threads", 1),
+						$this->getConfigInt("rcon.clients-per-thread", 50)
+					);
+				}catch(\Throwable $e){
+					$this->getLogger()->critical("RCON can't be started: " . $e->getMessage());
+				}
 			}
 
 			$this->entityMetadata = new EntityMetadataStore();
@@ -1580,11 +1590,9 @@ class Server{
 			InventoryType::init();
 			Block::init();
 			Enchantment::init();
-			Effect::init();
 			Item::init();
 			Potion::init();
 			Biome::init();
-			Attribute::init();
 			$this->craftingManager = new CraftingManager();
 
 			$this->resourceManager = new ResourcePackManager($this, $this->getDataPath() . "resource_packs" . DIRECTORY_SEPARATOR);
@@ -2166,15 +2174,20 @@ class Server{
 					if($p instanceof Plugin and !($p->getPluginLoader() instanceof PharPluginLoader)){
 						$report = false;
 					}
-				}elseif(\Phar::running(true) === ""){
-					$report = false;
 				}
+
 				if($dump->getData()["error"]["type"] === "E_PARSE" or $dump->getData()["error"]["type"] === "E_COMPILE_ERROR"){
 					$report = false;
 				}
 
+				if(strrpos(\pocketmine\GIT_COMMIT, "-dirty") !== false){
+					$this->logger->debug("Not sending crashdump due to locally modified");
+					$report = false; //Don't send crashdumps for locally modified builds
+				}
+
 				if($report){
-					$reply = Utils::postURL("http://" . $this->getProperty("auto-report.host", "crash.pocketmine.net") . "/submit/api", [
+					$url = ($this->getProperty("auto-report.use-https", true) ? "https" : "http") . "://" . $this->getProperty("auto-report.host", "crash.pmmp.io") . "/submit/api";
+					$reply = Utils::postURL($url, [
 						"report" => "yes",
 						"name" => $this->getName() . " " . $this->getPocketMineVersion(),
 						"email" => "crash@pocketmine.net",
@@ -2191,7 +2204,6 @@ class Server{
 		}catch(\Throwable $e){
 			$this->logger->logException($e);
 			$this->logger->critical($this->getLanguage()->translateString("pocketmine.crash.error", [$e->getMessage()]));
-			return;
 		}
 
 		//$this->checkMemory();

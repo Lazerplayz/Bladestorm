@@ -29,17 +29,17 @@ use pocketmine\level\Level;
 
 class Ice extends Transparent{
 
-	protected $id = self::ICE;
+	protected $id = Block::ICE;
 
-	public function __construct($meta = 0){
+	public function __construct(int $meta = 0){
 		$this->meta = $meta;
 	}
 
-	public function getName(){
+	public function getName() : string{
 		return "Ice";
 	}
 
-	public function getHardness(){
+	public function getHardness() : float{
 		return 0.5;
 	}
 
@@ -47,17 +47,21 @@ class Ice extends Transparent{
 		return 2;
 	}
 
-	public function getToolType(){
+	public function getToolType() : int{
 		return Tool::TYPE_PICKAXE;
 	}
 
-	public function onBreak(Item $item){
+	public function ticksRandomly() : bool{
+		return true;
+	}
+
+	public function onBreak(Item $item) : bool{
 		$this->getLevel()->setBlock($this, Block::get(Block::FLOWING_WATER), true);
 
 		return true;
 	}
 
-	public function onUpdate($type){
+	public function onUpdate(int $type){
 		if($type === Level::BLOCK_UPDATE_RANDOM){
 			if($this->level->getHighestAdjacentBlockLight($this->x, $this->y, $this->z) >= 12){
 				$this->level->useBreakOn($this);
@@ -68,7 +72,7 @@ class Ice extends Transparent{
 		return false;
 	}
 
-	public function getDrops(Item $item){
+	public function getDrops(Item $item) : array{
 		return [];
 	}
 }
