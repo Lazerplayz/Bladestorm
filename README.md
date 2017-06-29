@@ -4,4 +4,4 @@ Bladestorm is a custom server core for NetherGames servers. Its primary purpose 
 
 ### Notes
 
-This server software is maintained by [@keithkfng](https://github.com/keithkfng) and [@Lazerplayz](https://github.com/lazerplayz) for NetherGames servers. This is not software for everyone, this is software for our intended use. Hopefully you find it useful too.
+This server software is maintained by [@keithkfng](https://github.com/keithkfng) and for NetherGames servers. This is not software for everyone, this is software for our intended use. Hopefully you find it useful too.

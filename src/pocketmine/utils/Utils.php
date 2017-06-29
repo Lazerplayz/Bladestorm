@@ -36,6 +36,7 @@ class Utils{
 	public static $online = true;
 	public static $ip = false;
 	public static $os;
+	/** @var UUID|null */
 	private static $serverUniqueId = null;
 
 	/**
@@ -491,5 +492,37 @@ class Utils{
 			$hash &= 0xFFFFFFFF;
 		}
 		return $hash;
+	}
+
+
+	/**
+	 * @param string      $command Command to execute
+	 * @param string|null &$stdout Reference parameter to write stdout to
+	 * @param string|null &$stderr Reference parameter to write stderr to
+	 *
+	 * @return int process exit code
+	 */
+	public static function execute(string $command, string &$stdout = null, string &$stderr = null) : int{
+		$process = proc_open($command, [
+			["pipe", "r"],
+			["pipe", "w"],
+			["pipe", "w"]
+		], $pipes);
+
+		if($process === false){
+			$stderr = "Failed to open process";
+			$stdout = "";
+
+			return -1;
+		}
+
+		$stdout = stream_get_contents($pipes[1]);
+		$stderr = stream_get_contents($pipes[2]);
+
+		foreach($pipes as $p){
+			fclose($p);
+		}
+
+		return proc_close($process);
 	}
 }
