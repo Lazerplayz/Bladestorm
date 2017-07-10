@@ -31,6 +31,7 @@ use pocketmine\event\player\PlayerExhaustEvent;
 use pocketmine\inventory\InventoryHolder;
 use pocketmine\inventory\PlayerInventory;
 use pocketmine\item\Consumable;
+use pocketmine\item\enchantment\Enchantment;
 use pocketmine\item\FoodSource;
 use pocketmine\item\Item as ItemItem;
 use pocketmine\level\Level;
@@ -74,6 +75,8 @@ class Human extends Creature implements ProjectileSource, InventoryHolder{
 
 	protected $totalXp = 0;
 	protected $xpSeed;
+
+	protected $baseOffset = 1.62;
 
 	public function __construct(Level $level, CompoundTag $nbt){
 		if($this->skin === "" and (!isset($nbt->Skin) or !isset($nbt->Skin->Data) or !Player::isValidSkin($nbt->Skin->Data->getValue()))){
@@ -462,6 +465,14 @@ class Human extends Creature implements ProjectileSource, InventoryHolder{
 					$this->setSprinting(false);
 				}
 			}
+		}
+	}
+
+	protected function doAirSupplyTick(int $tickDiff){
+		//TODO: allow this to apply to other mobs
+		if(($ench = $this->inventory->getHelmet()->getEnchantment(Enchantment::RESPIRATION)) === null or
+			lcg_value() <= (1 / ($ench->getLevel() + 1))){
+			parent::doAirSupplyTick($tickDiff);
 		}
 	}
 

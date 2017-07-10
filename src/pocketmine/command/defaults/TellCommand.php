@@ -24,6 +24,7 @@ declare(strict_types=1);
 namespace pocketmine\command\defaults;
 
 use pocketmine\command\CommandSender;
+use pocketmine\command\utils\InvalidCommandSyntaxException;
 use pocketmine\event\TranslationContainer;
 use pocketmine\Player;
 use pocketmine\utils\TextFormat;
@@ -46,9 +47,7 @@ class TellCommand extends VanillaCommand{
 		}
 
 		if(count($args) < 2){
-			$sender->sendMessage("§l§o§eN§6G§r§7: §cMake sure you give us the player and the message, like /tell <player> <message>");
-
-			return false;
+			throw new InvalidCommandSyntaxException();
 		}
 
 		$name = strtolower(array_shift($args));

@@ -27,9 +27,7 @@ use pocketmine\event\entity\EntityDamageByEntityEvent;
 use pocketmine\event\entity\EntityDamageEvent;
 use pocketmine\item\Item as ItemItem;
 use pocketmine\math\Vector3;
-use pocketmine\network\mcpe\protocol\AddEntityPacket;
 use pocketmine\network\mcpe\protocol\EntityEventPacket;
-use pocketmine\Player;
 
 class Squid extends WaterAnimal implements Ageable{
 	const NETWORK_ID = 17;
@@ -79,7 +77,7 @@ class Squid extends WaterAnimal implements Ageable{
 
 
 	public function onUpdate($currentTick){
-		if($this->closed !== false){
+		if($this->closed){
 			return false;
 		}
 
@@ -89,8 +87,6 @@ class Squid extends WaterAnimal implements Ageable{
 				$this->swimDirection = null;
 			}
 		}
-
-		$this->lastUpdate = $currentTick;
 
 		$this->timings->startTiming();
 

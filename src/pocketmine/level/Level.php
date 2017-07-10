@@ -26,27 +26,7 @@ declare(strict_types=1);
  */
 namespace pocketmine\level;
 
-use pocketmine\block\Beetroot;
 use pocketmine\block\Block;
-use pocketmine\block\BrownMushroom;
-use pocketmine\block\Cactus;
-use pocketmine\block\Carrot;
-use pocketmine\block\Farmland;
-use pocketmine\block\Fire;
-use pocketmine\block\Grass;
-use pocketmine\block\Ice;
-use pocketmine\block\Leaves;
-use pocketmine\block\Leaves2;
-use pocketmine\block\MelonStem;
-use pocketmine\block\Mycelium;
-use pocketmine\block\NetherWartPlant;
-use pocketmine\block\Potato;
-use pocketmine\block\PumpkinStem;
-use pocketmine\block\RedMushroom;
-use pocketmine\block\Sapling;
-use pocketmine\block\SnowLayer;
-use pocketmine\block\Sugarcane;
-use pocketmine\block\Wheat;
 use pocketmine\entity\projectile\Arrow;
 use pocketmine\entity\Effect;
 use pocketmine\entity\Entity;
@@ -952,11 +932,11 @@ class Level implements ChunkManager, Metadatable{
 
 			foreach($chunk->getSubChunks() as $Y => $subChunk){
 				if(!$subChunk->isEmpty()){
-					$k = mt_rand(0, 0x7fffffff);
-					for($i = 0; $i < 3; ++$i, $k >>= 10){
+					for($i = 0; $i < 3; ++$i){
+						$k = mt_rand(0, 0xfff);
 						$x = $k & 0x0f;
-						$y = ($k >> 8) & 0x0f;
-						$z = ($k >> 16) & 0x0f;
+						$y = ($k >> 4) & 0x0f;
+						$z = ($k >> 8) & 0x0f;
 
 						$blockId = $subChunk->getBlockId($x, $y, $z);
 						if($this->randomTickBlocks[$blockId] !== null){
@@ -2390,10 +2370,10 @@ class Level implements ChunkManager, Metadatable{
 					continue;
 				}
 				$this->timings->syncChunkSendPrepareTimer->startTiming();
+
 				$task = $this->provider->requestChunkTask($x, $z);
-				if($task !== null){
-					$this->server->getScheduler()->scheduleAsyncTask($task);
-				}
+				$this->server->getScheduler()->scheduleAsyncTask($task);
+
 				$this->timings->syncChunkSendPrepareTimer->stopTiming();
 			}
 
