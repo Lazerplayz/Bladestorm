@@ -25,7 +25,7 @@ namespace pocketmine\level\format;
 
 class EmptySubChunk implements SubChunkInterface{
 
-	public function isEmpty() : bool{
+	public function isEmpty(bool $checkLight = true) : bool{
 		return true;
 	}
 
@@ -101,8 +101,16 @@ class EmptySubChunk implements SubChunkInterface{
 		return str_repeat("\x00", 2048);
 	}
 
+	public function setBlockLightArray(string $data){
+
+	}
+
 	public function getBlockSkyLightArray() : string{
 		return str_repeat("\xff", 2048);
+	}
+
+	public function setBlockSkyLightArray(string $data){
+
 	}
 
 	public function networkSerialize() : string{

@@ -30,7 +30,7 @@ class SubChunk implements SubChunkInterface{
 	protected $blockLight;
 	protected $skyLight;
 
-	private static function assignData(&$target, $data, $length, $value = "\x00"){
+	private static function assignData(&$target, string $data, int $length, string $value = "\x00"){
 		if(strlen($data) !== $length){
 			assert($data === "", "Invalid non-zero length given, expected $length, got " . strlen($data));
 			$target = str_repeat($value, $length);
@@ -46,11 +46,13 @@ class SubChunk implements SubChunkInterface{
 		self::assignData($this->blockLight, $blockLight, 2048);
 	}
 
-	public function isEmpty() : bool{
+	public function isEmpty(bool $checkLight = true) : bool{
 		return (
 			substr_count($this->ids, "\x00") === 4096 and
-			substr_count($this->skyLight, "\xff") === 2048 and
-			substr_count($this->blockLight, "\x00") === 2048
+			(!$checkLight or (
+				substr_count($this->skyLight, "\xff") === 2048 and
+				substr_count($this->blockLight, "\x00") === 2048
+			))
 		);
 	}
 
@@ -201,9 +203,19 @@ class SubChunk implements SubChunkInterface{
 		return $this->skyLight;
 	}
 
+	public function setBlockSkyLightArray(string $data){
+		assert(strlen($data) === 2048, "Wrong length of skylight array, expecting 2048 bytes, got " . strlen($data));
+		$this->skyLight = $data;
+	}
+
 	public function getBlockLightArray() : string{
 		assert(strlen($this->blockLight) === 2048, "Wrong length of light array, expecting 2048 bytes, got " . strlen($this->blockLight));
 		return $this->blockLight;
+	}
+
+	public function setBlockLightArray(string $data){
+		assert(strlen($data) === 2048, "Wrong length of light array, expecting 2048 bytes, got " . strlen($data));
+		$this->blockLight = $data;
 	}
 
 	public function networkSerialize() : string{
